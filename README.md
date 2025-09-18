@@ -46,7 +46,7 @@ This project integrates **Hyperledger Fabric**, **AI (Python)**, and **Fortran**
 
 ### Hyperledger Fabric Setup
 ```bash
-./start-network.sh ```
+./start-network.sh 
 
 ### **AI Module**
 
@@ -173,6 +173,7 @@ curl -X POST http://127.0.0.1:7000/simulate \
     "temperature_profile": [25,30,28,35,33,40,38,36],
     "humidity_profile": [60,65,70,75,70,65,60,55]
 }'
+
 
 
 
