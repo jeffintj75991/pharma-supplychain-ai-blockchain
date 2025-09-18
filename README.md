@@ -48,7 +48,7 @@ This project integrates **Hyperledger Fabric**, **AI (Python)**, and **Fortran**
 ```bash
 ./start-network.sh ```
 
-🔹 AI Module
+### **AI Module**
 
 For training
 
@@ -174,14 +174,6 @@ curl -X POST http://127.0.0.1:7000/simulate \
     "humidity_profile": [60,65,70,75,70,65,60,55]
 }'
 
-
-
-Blockchain: Ensures immutability, auditability, and regulatory compliance.
-
-🏆 Summary
-
-
-This project demonstrates the synergy of Blockchain, AI, and Scientific Simulation to tackle real-world pharmaceutical supply chain challenges.
 
 
 
