@@ -1,0 +1,209 @@
+Organizations:
+    - &OrdererOrg
+        Name: OrdererOrg
+        ID: OrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/pharma.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererMSP.admin')"
+
+    - &Manufacturer
+        Name: ManufacturerMSP
+        ID: ManufacturerMSP
+        MSPDir: crypto-config/peerOrganizations/manufacturer.pharma.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('ManufacturerMSP.admin', 'ManufacturerMSP.peer', 'ManufacturerMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('ManufacturerMSP.admin', 'ManufacturerMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('ManufacturerMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('ManufacturerMSP.peer')"
+            # CustomPolicy:
+            #     Type: Signature
+            #     Rule: "OR('ManufacturerMSP.admin', 'ManufacturerMSP.client')"
+
+        AnchorPeers:
+            - Host: peer0.manufacturer.pharma.com
+              Port: 7051
+
+    - &Distributor
+        Name: DistributorMSP
+        ID: DistributorMSP
+        MSPDir: crypto-config/peerOrganizations/distributor.pharma.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('DistributorMSP.admin', 'DistributorMSP.peer', 'DistributorMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('DistributorMSP.admin', 'DistributorMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('DistributorMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('DistributorMSP.peer')"
+            # CustomPolicy:
+            #     Type: Signature
+            #     Rule: "OR('ManufacturerMSP.admin')"
+
+        AnchorPeers:
+            - Host: peer0.distributor.pharma.com
+              Port: 9051
+    
+    - &Regulator
+        Name: RegulatorMSP
+        ID: RegulatorMSP
+        MSPDir: crypto-config/peerOrganizations/regulator.pharma.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('RegulatorMSP.admin', 'RegulatorMSP.peer', 'RegulatorMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('RegulatorMSP.admin', 'RegulatorMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('RegulatorMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('RegulatorMSP.peer')"
+            # CustomPolicy:
+            #     Type: Signature
+            #     Rule: "OR('ManufacturerMSP.admin')"
+
+        AnchorPeers:
+            - Host: peer0.regulator.pharma.com
+              Port: 9051
+
+Capabilities:
+    Channel: &ChannelCapabilities
+        V2_0: true
+    Orderer: &OrdererCapabilities
+        V2_0: true
+    Application: &ApplicationCapabilities
+        V2_5: true
+
+Application: &ApplicationDefaults
+
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        # Restrict:
+        #     Type: ImplicitMeta
+        #     Rule: "ANY CustomPolicy"
+
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+
+    OrdererType: etcdraft
+
+    EtcdRaft:
+        Consenters:
+        - Host: orderer.pharma.com
+          Port: 7050
+          ClientTLSCert: crypto-config/ordererOrganizations/pharma.com/orderers/orderer.pharma.com/tls/server.crt
+          ServerTLSCert: crypto-config/ordererOrganizations/pharma.com/orderers/orderer.pharma.com/tls/server.crt
+
+    Addresses:
+        - orderer.pharma.com:7050
+
+    BatchTimeout: 2s
+
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+
+    Organizations:
+
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+
+    Capabilities:
+        <<: *ChannelCapabilities
+
+
+Profiles:
+  ChannelUsingRaft:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      OrdererType: etcdraft
+      EtcdRaft:
+        Consenters:
+          - Host: orderer.pharma.com
+            Port: 7050
+            ClientTLSCert: crypto-config/ordererOrganizations/pharma.com/orderers/orderer.pharma.com/tls/server.crt
+            ServerTLSCert: crypto-config/ordererOrganizations/pharma.com/orderers/orderer.pharma.com/tls/server.crt
+          - Host: orderer2.pharma.com
+            Port: 7052
+            ClientTLSCert: crypto-config/ordererOrganizations/pharma.com/orderers/orderer2.pharma.com/tls/server.crt
+            ServerTLSCert: crypto-config/ordererOrganizations/pharma.com/orderers/orderer2.pharma.com/tls/server.crt
+          - Host: orderer3.pharma.com
+            Port: 7056
+            ClientTLSCert: crypto-config/ordererOrganizations/pharma.com/orderers/orderer3.pharma.com/tls/server.crt
+            ServerTLSCert: crypto-config/ordererOrganizations/pharma.com/orderers/orderer3.pharma.com/tls/server.crt
+      
+      Organizations:
+        - *OrdererOrg
+      Capabilities: *OrdererCapabilities
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Manufacturer
+        - *Distributor
+        - *Regulator
+      Capabilities: *ApplicationCapabilities

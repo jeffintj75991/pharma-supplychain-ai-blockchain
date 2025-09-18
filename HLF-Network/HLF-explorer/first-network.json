@@ -1,0 +1,50 @@
+{
+	"name": "test-network",
+	"version": "1.0.0",
+	"client": {
+		"tlsEnable": true,
+		"adminCredential": {
+			"id": "exploreradmin",
+			"password": "exploreradminpw"
+		},
+		"enableAuthentication": true,
+		"organization": "ManufacturerMSP",
+		"connection": {
+			"timeout": {
+				"peer": {
+					"endorser": "300"
+				},
+				"orderer": "300"
+			}
+		}
+	},
+	"channels": {
+		"pharmachannel": {
+			"peers": {
+				"peer0.manufacturer.pharma.com": {}
+			}
+		}
+	},
+  "organizations": {
+		"ManufacturerMSP": {
+			"mspid": "ManufacturerMSP",
+			"adminPrivateKey": {
+				"path": "/etc/data/peerOrganizations/manufacturer.pharma.com/users/Admin@manufacturer.pharma.com/msp/keystore/priv_sk"
+			},
+			"peers": [
+				"peer0.manufacturer.pharma.com"
+			],
+			"signedCert": {
+				"path": "/etc/data/peerOrganizations/manufacturer.pharma.com/users/Admin@manufacturer.pharma.com/msp/signcerts/cert.pem"
+			}
+		}
+	},
+  "peers": {
+		"peer0.manufacturer.pharma.com": {
+			"tlsCACerts": {
+				"path": "/etc/data/peerOrganizations/manufacturer.pharma.com/peers/peer0.manufacturer.pharma.com/tls/ca.crt"
+			},
+			"url": "grpcs://peer0.manufacturer.pharma.com:7051"
+		}
+	}
+}
