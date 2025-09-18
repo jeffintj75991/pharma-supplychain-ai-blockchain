@@ -33,6 +33,13 @@ This project integrates **Hyperledger Fabric**, **AI (Python)**, and **Fortran**
 - Returns degradation curve (drug concentration vs. time).
 - Exposed to Python via **f2py** and wrapped with FastAPI.
 
+
+  📖 Scientific Background
+
+Arrhenius Equation: Models drug degradation rate constant k = A * exp(-Ea / (R * T)).
+
+Random Forest AI Model: Predicts spoilage risk from environmental factors.
+
 ---
 
 ## 🚀 Setup Instructions
@@ -167,14 +174,11 @@ curl -X POST http://127.0.0.1:7000/simulate \
     "humidity_profile": [60,65,70,75,70,65,60,55]
 }'
 
-📖 Scientific Background
 
-Arrhenius Equation: Models drug degradation rate constant k = A * exp(-Ea / (R * T)).
-
-Random Forest AI Model: Predicts spoilage risk from environmental factors.
 
 Blockchain: Ensures immutability, auditability, and regulatory compliance.
 
 🏆 Summary
+
 
 This project demonstrates the synergy of Blockchain, AI, and Scientific Simulation to tackle real-world pharmaceutical supply chain challenges.
