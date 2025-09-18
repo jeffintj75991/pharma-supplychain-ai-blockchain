@@ -48,7 +48,7 @@ This project integrates **Hyperledger Fabric**, **AI (Python)**, and **Fortran**
 ```bash
 ./start-network.sh ```
 
-### AI Module
+🔹 AI Module
 
 For training
 
@@ -182,5 +182,6 @@ Blockchain: Ensures immutability, auditability, and regulatory compliance.
 
 
 This project demonstrates the synergy of Blockchain, AI, and Scientific Simulation to tackle real-world pharmaceutical supply chain challenges.
+
 
 
