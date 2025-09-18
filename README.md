@@ -8,7 +8,9 @@ This project integrates **Hyperledger Fabric**, **AI (Python)**, and **Fortran**
 
 ![System Architecture](./pharma_system_architecture.png)
 
-![Webpage](./pharma_app.png)
+## **Frontend Interface**
+
+![Front End Page](./pharma_app.png)
 
 ---
 
@@ -208,4 +210,5 @@ curl -X POST http://127.0.0.1:7000/simulate \
     "humidity_profile": [60,65,70,75,70,65,60,55]
 }'
 ```
+
 
