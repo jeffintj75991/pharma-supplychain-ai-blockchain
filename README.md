@@ -42,55 +42,63 @@ This project integrates **Hyperledger Fabric**, **AI (Python)**, and **Fortran**
 
 ---
 
-## 🚀 Setup Instructions
+# **Setup Instructions**
 
 ### Hyperledger Fabric Setup
 ```bash
 ./start-network.sh 
+```
 
-### **AI Module**
+### AI Module
 
 For training
 
+```bash
 python train_model.py
+```
 
 Run as a service
 
+```bash
 uvicorn predict_model:app --reload --host 0.0.0.0 --port 8000
+```
 
-## Fortran Module
+### Fortran Module
 
 Compile Fortran code to Python
 
+```bash
 f2py -c -m drug_degradation_py drug_degradation.f90
-
+```
 
 Run as a service
 
+```bash
 uvicorn drug_simulation:app --reload --host 0.0.0.0 --port 7000
+```
 
-## Frontend
+### Frontend
+```bash
 npm install
 npm start
+```
 
-## Fabric SDK (Java) - Run as a Service
+### Fabric SDK (Java) - Run as a Service
 
 Available APIs:
 
-Submit transactions
+- Submit transactions
+- Submit transport events
+- Add AI predictions
+- Add Fortran simulation results
+- Audit batches
+- Query transactions & block height
 
-Submit transport events
+📡 **Example Requests**
 
-Add AI predictions
+**Create a Drug Batch**
 
-Add Fortran simulation results
-
-Audit batches
-
-Query transactions & block height
-
-📡 Example Requests
-Create a Drug Batch
+```bash
 POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
 {
   "chaincodeName": "pharma-cc",
@@ -99,8 +107,11 @@ POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
   "isTransient": "false",
   "inputParameters": ["BATCH000000001000","DrugX","2025-09-09","2027-09-09"]
 }
+```
 
-Record Transport Data
+**Record Transport Data**
+
+```bash
 POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransportTransactions
 {
   "chaincodeName": "pharma-cc",
@@ -111,8 +122,11 @@ POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransportTransactions
   "transientValue": "{\"temperature\":4,\"humidity\":60,\"timestamp\":\"2025-09-09T10:05:00Z\"}",
   "inputParameters": ["BATCH000000001000"]
 }
+```
 
-Add Fortran Simulation Result
+**Add Fortran Simulation Result**
+
+```bash
 POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
 {
   "chaincodeName": "pharma-cc",
@@ -123,8 +137,11 @@ POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
   "transientValue": "{\"modelVersion\":\"v1.0\",\"curve\":[[25,100],[40,80]],\"notes\":\"accelerated stability\"}",
   "inputParameters": ["BATCH000000001000"]
 }
+```
 
-Add AI Prediction Result
+**Add AI Prediction Result**
+
+```bash
 POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
 {
   "chaincodeName": "pharma-cc",
@@ -135,8 +152,11 @@ POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
   "transientValue": "{\"model\":\"AI-risk\",\"riskScore\":0.7,\"label\":\"High Risk\",\"features\":{\"temp\":4},\"publishVerdict\":true,\"timestamp\":\"2025-09-09T10:10:00Z\"}",
   "inputParameters": ["BATCH000000001000"]
 }
+```
 
-Audit Batch
+**Audit Batch**
+
+```bash
 POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
 {
   "chaincodeName": "pharma-cc",
@@ -147,20 +167,33 @@ POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
   "transientValue": "{\"status\":\"APPROVED\",\"remarks\":\"All good\",\"timestamp\":\"2025-09-09T10:15:00Z\"}",
   "inputParameters": ["BATCH000000001000"]
 }
+```
 
-Query Batch Details
+**Query Batch Details**
+
+```bash
 http://localhost:9000/pharma-app/v1.0/HLF/getTransactions?channelName=pharmachannel&chaincodeName=pharma-cc&methodName=GetBatchDetails&value=BATCH000000001000
+```
 
-Check Block Height
+**Check Block Height**
+
+```bash
 http://localhost:9000/pharma-app/v1.0/HLF/getBlockHeight?channelName=pharmachannel
+```
 
-🔍 Testing AI & Fortran Services
-AI Prediction
+🔍 **Testing AI & Fortran Services**
+
+**AI Prediction**
+
+```bash
 curl -X POST "http://127.0.0.1:8000/predict" \
 -H "Content-Type: application/json" \
 -d '{"temp": 30, "humidity": 70}'
+```
 
-Fortran Simulation
+**Fortran Simulation**
+
+```bash
 curl -X POST http://127.0.0.1:7000/simulate \
 -H "Content-Type: application/json" \
 -d '{
@@ -173,8 +206,4 @@ curl -X POST http://127.0.0.1:7000/simulate \
     "temperature_profile": [25,30,28,35,33,40,38,36],
     "humidity_profile": [60,65,70,75,70,65,60,55]
 }'
-
-
-
-
-
+```
