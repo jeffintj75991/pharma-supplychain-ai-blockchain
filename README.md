@@ -1,16 +1,18 @@
-# Blockchain-Backed Pharma Drug Stability & Supply Chain Tracker
+# **Blockchain-Backed Pharma Drug Stability & Supply Chain Tracker**
 
 This project integrates **Hyperledger Fabric**, **AI (Python)**, and **Fortran** to build a secure, intelligent drug tracking and stability prediction system.
 
 ---
 
-## 📌 System Architecture
+## **📌 System Architecture**
 
 ![System Architecture](./pharma_system_architecture.png)
 
+![Front End Page](./pharma_app)
+
 ---
 
-## 🔹 Components
+## **🔹 Components**
 
 ### 1. Hyperledger Fabric Network
 - Provides a tamper-proof ledger for drug batches, transport events, and regulatory audits.
@@ -32,7 +34,6 @@ This project integrates **Hyperledger Fabric**, **AI (Python)**, and **Fortran**
 - Takes temperature & humidity profiles over time.
 - Returns degradation curve (drug concentration vs. time).
 - Exposed to Python via **f2py** and wrapped with FastAPI.
-
 
 ### **📖 Scientific Background**
 
@@ -207,4 +208,3 @@ curl -X POST http://127.0.0.1:7000/simulate \
     "humidity_profile": [60,65,70,75,70,65,60,55]
 }'
 ```
-
