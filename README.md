@@ -149,7 +149,7 @@ POST http://localhost:9000/pharma-app/v1.0/HLF/submitTransactions
   "channelName": "pharmachannel",
   "isTransient": "true",
   "transientKey": "prediction",
-  "transientValue": "{\"model\":\"AI-risk\",\"riskScore\":0.7,\"label\":\"High Risk\",\"features\":{\"temp\":4},\"publishVerdict\":true,\"timestamp\":\"2025-09-09T10:10:00Z\"}",
+  "transientValue": "{\"spoiled\":true,\"risk\":\"Yes\"}",
   "inputParameters": ["BATCH000000001000"]
 }
 ```
@@ -207,3 +207,4 @@ curl -X POST http://127.0.0.1:7000/simulate \
     "humidity_profile": [60,65,70,75,70,65,60,55]
 }'
 ```
+
