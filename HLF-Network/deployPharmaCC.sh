@@ -269,15 +269,6 @@ sleep 2
   peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} \
   -c '{"Args":["ListAllBatches"]}'
 
-
-echo -e "\n"
-  echo "GetAuditDetails"
-
-sleep 3
-  peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} \
-  -c '{"Args":["GetAuditDetails","BATCH100000001"]}'
-
-
 }
 
 
