@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Loader2, Truck } from "lucide-react";
+import { toast } from "react-toastify";
+import { ArrowLeft, ArrowRight, Droplets, Loader2, Thermometer, Truck } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import LoadingOverlay from "./LoadingOverlay";
 
 const TransportRecordForm: React.FC = () => {
@@ -13,15 +13,25 @@ const TransportRecordForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const observedAt = new Date(timestamp);
+    const humidityValue = Number(humidity);
+    const temperatureValue = Number(temperature);
+
+    if (!Number.isFinite(observedAt.getTime())) {
+      toast.error("Enter a valid date and time for this observation.");
+      return;
+    }
+    if (humidityValue < 0 || humidityValue > 100) {
+      toast.error("Humidity must be between 0% and 100%.");
+      return;
+    }
+
     setLoading(true);
-
-    const isoTimestamp = new Date(timestamp).toISOString();
     const transientValue = JSON.stringify({
-      temperature: Number(temperature),
-      humidity: Number(humidity),
-      timestamp: isoTimestamp,
+      temperature: temperatureValue,
+      humidity: humidityValue,
+      timestamp: observedAt.toISOString(),
     });
-
     const payload = {
       chaincodeName: "pharma-cc",
       methodName: "RecordTransport",
@@ -29,7 +39,7 @@ const TransportRecordForm: React.FC = () => {
       isTransient: true,
       transientKey: "transport",
       transientValue,
-      inputParameters: [batchId],
+      inputParameters: [batchId.trim()],
     };
 
     try {
@@ -42,75 +52,145 @@ const TransportRecordForm: React.FC = () => {
         }
       );
 
-      if (response.ok) {
-        await response.json();
-        toast.success("✅ Transport record submitted!");
-        setBatchId("");
-        setTemperature("");
-        setHumidity("");
-        setTimestamp("");
-      } else {
-        const errText = await response.text();
-        toast.error(`❌ Server error: ${errText}`);
+      if (!response.ok) {
+        const details = await response.text();
+        throw new Error(details || "The transport record could not be submitted.");
       }
+
+      await response.json();
+      toast.success("Transport record submitted.");
+      setBatchId("");
+      setTemperature("");
+      setHumidity("");
+      setTimestamp("");
     } catch (err) {
-      console.error(err);
-      toast.error("⚠️ Network error");
+      toast.error(err instanceof Error ? err.message : "Unable to reach the API.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-8 bg-white rounded-xl shadow-lg p-6 relative">
-      {loading && <LoadingOverlay message="Submitting transport..." />}
-      <h2 className="text-2xl font-bold mb-6 text-green-700 flex items-center gap-2">
-        <Truck className="w-6 h-6 text-green-500" /> Record Transport
-      </h2>
+    <div className="page-content form-page">
+      {loading && <LoadingOverlay message="Submitting transport record…" />}
+      <div className="page-backline">
+        <NavLink to="/" className="back-link"><ArrowLeft size={15} /> Overview</NavLink>
+        <span className="page-step">SHIPMENT ACTIVITY <span>·</span> 02 OF 03</span>
+      </div>
+      <section className="page-intro form-intro">
+        <div>
+          <p className="eyebrow">CONDITION LOG</p>
+          <h1>Record transport</h1>
+          <p className="intro-copy">Add an observation from a shipment handoff or checkpoint.</p>
+        </div>
+        <span className="intro-icon tone-teal"><Truck size={23} /></span>
+      </section>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Batch ID"
-          value={batchId}
-          onChange={(e) => setBatchId(e.target.value)}
-          className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-          required
-        />
-        <input
-          type="number"
-          placeholder="Temperature (°C)"
-          value={temperature}
-          onChange={(e) => setTemperature(e.target.value)}
-          className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-          required
-        />
-        <input
-          type="number"
-          placeholder="Humidity (%)"
-          value={humidity}
-          onChange={(e) => setHumidity(e.target.value)}
-          className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-          required
-        />
-        <input
-          type="datetime-local"
-          value={timestamp}
-          onChange={(e) => setTimestamp(e.target.value)}
-          className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-          required
-        />
+      <div className="form-layout">
+        <section className="form-card" aria-labelledby="transport-form-title">
+          <div className="form-card-heading">
+            <span className="form-section-number number-teal">02</span>
+            <div>
+              <h2 id="transport-form-title">Shipment conditions</h2>
+              <p>Enter the sensor reading and the time it was observed.</p>
+            </div>
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          {loading && <Loader2 className="animate-spin w-5 h-5" />}
-          Submit Transport
-        </button>
-      </form>
-      <ToastContainer position="top-right" autoClose={3000} />
+          <form onSubmit={handleSubmit} className="form-fields">
+            <div className="field-group">
+              <label htmlFor="transport-batch-id">Batch ID <span className="required-mark">*</span></label>
+              <input
+                id="transport-batch-id"
+                className="text-input"
+                type="text"
+                placeholder="Enter the registered batch ID"
+                value={batchId}
+                onChange={(e) => setBatchId(e.target.value)}
+                autoComplete="off"
+                required
+              />
+            </div>
+
+            <div className="field-grid">
+              <div className="field-group">
+                <label htmlFor="temperature">Temperature <span className="required-mark">*</span></label>
+                <div className="input-wrap">
+                  <span className="input-leading"><Thermometer size={17} /></span>
+                  <input
+                    id="temperature"
+                    className="text-input has-leading has-trailing"
+                    type="number"
+                    step="any"
+                    placeholder="4.0"
+                    value={temperature}
+                    onChange={(e) => setTemperature(e.target.value)}
+                    required
+                  />
+                  <span className="input-trailing">°C</span>
+                </div>
+              </div>
+              <div className="field-group">
+                <label htmlFor="humidity">Relative humidity <span className="required-mark">*</span></label>
+                <div className="input-wrap">
+                  <span className="input-leading"><Droplets size={17} /></span>
+                  <input
+                    id="humidity"
+                    className="text-input has-leading has-trailing"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="any"
+                    placeholder="60"
+                    value={humidity}
+                    onChange={(e) => setHumidity(e.target.value)}
+                    required
+                  />
+                  <span className="input-trailing">%</span>
+                </div>
+                <span className="field-hint">Enter a value from 0 to 100.</span>
+              </div>
+            </div>
+
+            <div className="field-group">
+              <label htmlFor="observed-at">Observed at <span className="required-mark">*</span></label>
+              <input
+                id="observed-at"
+                className="text-input"
+                type="datetime-local"
+                value={timestamp}
+                onChange={(e) => setTimestamp(e.target.value)}
+                required
+              />
+              <span className="field-hint">Use the local time shown by the monitoring device.</span>
+            </div>
+
+            <div className="form-footer">
+              <span className="form-required-note"><span className="required-mark">*</span> Required fields</span>
+              <button className="button button-teal" type="submit" disabled={loading}>
+                {loading ? <Loader2 className="spin" size={17} /> : <Truck size={17} />}
+                Submit record <ArrowRight size={16} />
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <aside className="form-aside">
+          <div className="aside-card aside-card-teal">
+            <span className="aside-card-icon"><Thermometer size={18} /></span>
+            <h3>Why log conditions?</h3>
+            <p>Temperature and humidity observations help teams review how a shipment was handled.</p>
+          </div>
+          <div className="aside-card">
+            <p className="eyebrow">GOOD TO KNOW</p>
+            <div className="note-list">
+              <div><span className="note-check">1</span><span>Confirm the batch ID before submitting.</span></div>
+              <div><span className="note-check">2</span><span>Use the time the reading was taken.</span></div>
+              <div><span className="note-check">3</span><span>Enter relative humidity as a percentage.</span></div>
+            </div>
+            <NavLink className="aside-link" to="/batch-details">Review a batch <ArrowRight size={15} /></NavLink>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 };

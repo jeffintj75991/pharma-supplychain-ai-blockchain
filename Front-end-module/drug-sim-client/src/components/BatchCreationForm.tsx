@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Loader2, Pill } from "lucide-react";
+import { toast } from "react-toastify";
+import { ArrowLeft, ArrowRight, Loader2, PackagePlus, Pill, ShieldCheck, Truck } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import LoadingOverlay from "./LoadingOverlay";
 
 const BatchCreationForm: React.FC = () => {
@@ -13,16 +13,18 @@ const BatchCreationForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (expDate <= mfgDate) {
+      toast.error("Expiry date must be later than the manufacture date.");
+      return;
+    }
 
+    setLoading(true);
     const payload = {
       chaincodeName: "pharma-cc",
       methodName: "CreateBatch",
       channelName: "pharmachannel",
-      isTransient: "false",
-      transientKey: "",
-      transientValue: "",
-      inputParameters: [batchId, drugName, mfgDate, expDate],
+      isTransient: false,
+      inputParameters: [batchId.trim(), drugName.trim(), mfgDate, expDate],
     };
 
     try {
@@ -35,96 +37,137 @@ const BatchCreationForm: React.FC = () => {
         }
       );
 
-      if (response.ok) {
-        await response.json();
-        toast.success("✅ Batch created successfully!");
-        setBatchId("");
-        setDrugName("");
-        setMfgDate("");
-        setExpDate("");
-      } else {
-        toast.error("❌ Failed to create batch (server error)");
+      if (!response.ok) {
+        const details = await response.text();
+        throw new Error(details || "The batch could not be created.");
       }
+
+      await response.json();
+      toast.success("Batch created and submitted to the ledger.");
+      setBatchId("");
+      setDrugName("");
+      setMfgDate("");
+      setExpDate("");
     } catch (err) {
-      console.error(err);
-      toast.error("⚠️ Network error");
+      toast.error(err instanceof Error ? err.message : "Unable to reach the API.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center mt-10">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 relative">
-        {loading && <LoadingOverlay message="Creating batch..." />}
+    <div className="page-content form-page">
+      {loading && <LoadingOverlay message="Creating batch…" />}
+      <div className="page-backline">
+        <NavLink to="/" className="back-link"><ArrowLeft size={15} /> Overview</NavLink>
+        <span className="page-step">BATCH REGISTRATION <span>·</span> 01 OF 03</span>
+      </div>
+      <section className="page-intro form-intro">
+        <div>
+          <p className="eyebrow">NEW LEDGER RECORD</p>
+          <h1>Create a batch</h1>
+          <p className="intro-copy">Start a traceable record for a pharmaceutical product.</p>
+        </div>
+        <span className="intro-icon tone-blue"><PackagePlus size={23} /></span>
+      </section>
 
-        <h2 className="text-3xl font-extrabold mb-8 text-blue-700 flex items-center gap-3">
-          <Pill className="w-7 h-7 text-blue-500" /> Create Drug Batch
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Batch ID */}
-          <div className="flex items-center bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-sm focus-within:ring-2 focus-within:ring-blue-400 transition">
-            <Pill className="w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Batch ID"
-              value={batchId}
-              onChange={(e) => setBatchId(e.target.value)}
-              className="ml-3 w-full text-lg bg-transparent focus:outline-none"
-              required
-            />
+      <div className="form-layout">
+        <section className="form-card" aria-labelledby="batch-form-title">
+          <div className="form-card-heading">
+            <span className="form-section-number">01</span>
+            <div>
+              <h2 id="batch-form-title">Batch information</h2>
+              <p>Enter the product details exactly as they appear on the packaging.</p>
+            </div>
           </div>
 
-          {/* Drug Name */}
-          <div className="flex items-center bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-sm focus-within:ring-2 focus-within:ring-blue-400 transition">
-            <Pill className="w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Drug Name"
-              value={drugName}
-              onChange={(e) => setDrugName(e.target.value)}
-              className="ml-3 w-full text-lg bg-transparent focus:outline-none"
-              required
-            />
+          <form onSubmit={handleSubmit} className="form-fields">
+            <div className="field-group">
+              <label htmlFor="batch-id">Batch ID <span className="required-mark">*</span></label>
+              <div className="input-wrap">
+                <span className="input-leading"><PackagePlus size={17} /></span>
+                <input
+                  id="batch-id"
+                  className="text-input has-leading"
+                  type="text"
+                  placeholder="e.g. BATCH-2026-001"
+                  value={batchId}
+                  onChange={(e) => setBatchId(e.target.value)}
+                  autoComplete="off"
+                  required
+                />
+              </div>
+              <span className="field-hint">Use a unique identifier that your team can recognize.</span>
+            </div>
+
+            <div className="field-group">
+              <label htmlFor="drug-name">Product name <span className="required-mark">*</span></label>
+              <div className="input-wrap">
+                <span className="input-leading"><Pill size={17} /></span>
+                <input
+                  id="drug-name"
+                  className="text-input has-leading"
+                  type="text"
+                  placeholder="e.g. Product name or compound"
+                  value={drugName}
+                  onChange={(e) => setDrugName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="field-grid">
+              <div className="field-group">
+                <label htmlFor="manufacture-date">Manufacture date <span className="required-mark">*</span></label>
+                <input
+                  id="manufacture-date"
+                  className="text-input"
+                  type="date"
+                  value={mfgDate}
+                  onChange={(e) => setMfgDate(e.target.value)}
+                  max={expDate || undefined}
+                  required
+                />
+              </div>
+              <div className="field-group">
+                <label htmlFor="expiry-date">Expiry date <span className="required-mark">*</span></label>
+                <input
+                  id="expiry-date"
+                  className="text-input"
+                  type="date"
+                  value={expDate}
+                  onChange={(e) => setExpDate(e.target.value)}
+                  min={mfgDate || undefined}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-footer">
+              <span className="form-required-note"><span className="required-mark">*</span> Required fields</span>
+              <button className="button button-primary" type="submit" disabled={loading}>
+                {loading ? <Loader2 className="spin" size={17} /> : <PackagePlus size={17} />}
+                Create batch <ArrowRight size={16} />
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <aside className="form-aside">
+          <div className="aside-card aside-card-blue">
+            <span className="aside-card-icon"><ShieldCheck size={18} /></span>
+            <h3>Recorded on the ledger</h3>
+            <p>Creating a batch submits its identity and dates to the supply chain ledger.</p>
           </div>
-
-          {/* Manufacturing Date */}
-          <div className="bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-sm focus-within:ring-2 focus-within:ring-blue-400 transition">
-            <label className="text-gray-500 mb-1 block text-sm">Manufacturing Date</label>
-            <input
-              type="date"
-              value={mfgDate}
-              onChange={(e) => setMfgDate(e.target.value)}
-              className="w-full text-lg bg-transparent focus:outline-none"
-              required
-            />
+          <div className="aside-card">
+            <p className="eyebrow">NEXT STEP</p>
+            <div className="next-step-row">
+              <span className="next-step-icon"><Truck size={16} /></span>
+              <div><strong>Record a handoff</strong><span>Capture shipment conditions as they happen.</span></div>
+            </div>
+            <NavLink className="aside-link" to="/record-transport">Go to transport <ArrowRight size={15} /></NavLink>
           </div>
-
-          {/* Expiry Date */}
-          <div className="bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-sm focus-within:ring-2 focus-within:ring-blue-400 transition">
-            <label className="text-gray-500 mb-1 block text-sm">Expiry Date</label>
-            <input
-              type="date"
-              value={expDate}
-              onChange={(e) => setExpDate(e.target.value)}
-              className="w-full text-lg bg-transparent focus:outline-none"
-              required
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 flex items-center justify-center gap-3 text-lg font-semibold disabled:opacity-50 transition"
-          >
-            {loading && <Loader2 className="animate-spin w-6 h-6" />}
-            Create Batch
-          </button>
-        </form>
-
-        <ToastContainer position="top-right" autoClose={3000} />
+        </aside>
       </div>
     </div>
   );
